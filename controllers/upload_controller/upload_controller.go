@@ -196,7 +196,7 @@ func UploadMedia(contents io.ReadCloser, contentLength int64, contentType string
 		return m, err
 	}
 	if m != nil {
-		util.NotifyUpload(origin, mediaId)
+		util.NotifyUpload(ctx, origin, mediaId)
 		if asyncMediaId != "" {
 			if err := internal_cache.Get().NotifyUpload(origin, mediaId, ctx); err != nil {
 				ctx.Log.Warn("Unexpected error trying to notify cache about media: " + err.Error())

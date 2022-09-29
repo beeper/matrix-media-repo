@@ -62,7 +62,7 @@ func NewCache(conf config.RedisConfig) *RedisCache {
 					}
 
 					logrus.Infof("Client %s notified about %s/%s being uploaded", client.String(), ref.Origin, ref.MediaId)
-					util.NotifyUpload(ref.Origin, ref.MediaId)
+					util.NotifyUpload(rcontext.Initial(), ref.Origin, ref.MediaId)
 				}
 
 				if ctx.Done() != nil {

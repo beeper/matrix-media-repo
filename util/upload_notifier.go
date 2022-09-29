@@ -3,6 +3,8 @@ package util
 import (
 	"sync"
 	"time"
+
+	"github.com/turt2live/matrix-media-repo/common/rcontext"
 )
 
 type mediaSet map[chan struct{}]struct{}
@@ -81,7 +83,7 @@ func WaitForUpload(ch chan struct{}, origin string, mediaID string, timeout time
 	}
 }
 
-func NotifyUpload(origin string, mediaId string) {
+func NotifyUpload(ctx rcontext.RequestContext, origin string, mediaId string) {
 	waiterLock.Lock()
 	defer waiterLock.Unlock()
 
@@ -91,6 +93,7 @@ func NotifyUpload(origin string, mediaId string) {
 		return
 	}
 
+	ctx.Log.Infof("notifying %d listeners of upload complete", len(set))
 	for channel := range set {
 		channel <- struct{}{}
 	}

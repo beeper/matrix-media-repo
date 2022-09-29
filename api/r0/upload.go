@@ -159,7 +159,7 @@ func UploadComplete(r *http.Request, rctx rcontext.RequestContext, user api.User
 		}
 	}()
 
-	util.NotifyUpload(server, mediaId)
+	util.NotifyUpload(rctx, server, mediaId)
 
 	if err := internal_cache.Get().NotifyUpload(server, mediaId, rctx); err != nil {
 		rctx.Log.Warn("Unexpected error trying to notify cache about media: " + err.Error())
