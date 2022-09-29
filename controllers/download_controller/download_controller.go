@@ -194,7 +194,7 @@ func getMediaWaitForUpload(origin string, mediaID string, asyncWaitMs *int, ctx 
 	}
 
 	if media == nil {
-		return nil, errors.New("waited for nil media")
+		return nil, errors.New("nil media from database")
 	}
 
 	if !util.IsServerOurs(origin) {
@@ -204,6 +204,7 @@ func getMediaWaitForUpload(origin string, mediaID string, asyncWaitMs *int, ctx 
 	if media.SizeBytes > 0 {
 		return media, nil
 	}
+
 	// we're not allowed to wait by requester
 	if asyncWaitMs == nil {
 		return nil, common.ErrMediaNotFound
@@ -247,6 +248,8 @@ func FindMinimalMediaRecord(origin string, mediaId string, downloadRemote bool, 
 	if found {
 		media = item.(*types.Media)
 	} else {
+		ctx.Log.Info("media not in cache, checking database")
+
 		var err error
 		media, err = getMediaWaitForUpload(origin, mediaId, asyncWaitMs, ctx)
 		if err != nil {

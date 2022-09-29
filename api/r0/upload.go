@@ -134,6 +134,12 @@ func UploadComplete(r *http.Request, rctx rcontext.RequestContext, user api.User
 		return api.InternalServerError("unexpected error processing upload")
 	}
 
+	util.NotifyUpload(rctx, server, mediaId)
+
+	if err := internal_cache.Get().NotifyUpload(server, mediaId, rctx); err != nil {
+		rctx.Log.Warn("Unexpected error trying to notify cache about media: " + err.Error())
+	}
+
 	go func() {
 		// Download the file to get the hash
 		f, err := ds.DownloadFile(media.Location)
@@ -158,12 +164,6 @@ func UploadComplete(r *http.Request, rctx rcontext.RequestContext, user api.User
 			return
 		}
 	}()
-
-	util.NotifyUpload(rctx, server, mediaId)
-
-	if err := internal_cache.Get().NotifyUpload(server, mediaId, rctx); err != nil {
-		rctx.Log.Warn("Unexpected error trying to notify cache about media: " + err.Error())
-	}
 
 	rctx.Log.Debug("finished handling upload_complete")
 
