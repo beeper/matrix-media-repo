@@ -27,8 +27,29 @@ func StartWaitForUpload(origin string, mediaID string) chan struct{} {
 	return ch
 }
 
-func WaitForUpload(ch chan struct{}, origin string, mediaId string, timeout time.Duration) bool {
-	key := origin + mediaId
+func CancelWaitForUpload(ch chan struct{}, origin string, mediaID string) {
+	key := origin + mediaID
+	waiterLock.Lock()
+
+	var set mediaSet
+	var ok bool
+	if set, ok = waiters[key]; !ok {
+		set = make(mediaSet)
+		waiters[key] = set
+	}
+
+	delete(set, ch)
+	close(ch)
+
+	if len(set) == 0 {
+		delete(waiters, key)
+	}
+
+	waiterLock.Unlock()
+}
+
+func WaitForUpload(ch chan struct{}, origin string, mediaID string, timeout time.Duration) bool {
+	key := origin + mediaID
 	waiterLock.Lock()
 
 	var set mediaSet

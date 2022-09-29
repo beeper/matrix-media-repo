@@ -184,6 +184,7 @@ func GetMedia(origin string, mediaId string, downloadRemote bool, blockForMedia 
 // func waitForUpload(media *types.Media, asyncWaitMs *int, ctx rcontext.RequestContext) (*types.Media, error) {
 func getMediaWaitForUpload(origin string, mediaID string, asyncWaitMs *int, ctx rcontext.RequestContext) (*types.Media, error) {
 	ch := util.StartWaitForUpload(origin, mediaID)
+	defer util.CancelWaitForUpload(ch, origin, mediaID)
 
 	ctx.Log.Info("Getting media record from database")
 	db := storage.GetDatabase().GetMediaStore(ctx)
@@ -200,7 +201,7 @@ func getMediaWaitForUpload(origin string, mediaID string, asyncWaitMs *int, ctx 
 		return media, nil
 	}
 
-	if media.SizeBytes != 0 {
+	if media.SizeBytes > 0 {
 		return media, nil
 	}
 	// we're not allowed to wait by requester
