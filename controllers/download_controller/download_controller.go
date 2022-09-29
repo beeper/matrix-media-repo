@@ -183,6 +183,7 @@ func GetMedia(origin string, mediaId string, downloadRemote bool, blockForMedia 
 
 // func waitForUpload(media *types.Media, asyncWaitMs *int, ctx rcontext.RequestContext) (*types.Media, error) {
 func getMediaWaitForUpload(origin string, mediaID string, asyncWaitMs *int, ctx rcontext.RequestContext) (*types.Media, error) {
+	ctx.Log.Info("starting listener for async upload notifications")
 	ch := util.StartWaitForUpload(origin, mediaID)
 	defer util.CancelWaitForUpload(ch, origin, mediaID)
 
