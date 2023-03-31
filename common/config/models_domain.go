@@ -69,6 +69,7 @@ type UrlPreviewsConfig struct {
 	OEmbed             bool     `yaml:"oEmbed"`
 	Proxy              string   `yaml:"proxy"`
 	MetricsDomains     []string `yaml:"metricsDomains"`
+	DisableTunny       bool     `yaml:"disableTunny"`
 }
 
 type IdenticonsConfig struct {

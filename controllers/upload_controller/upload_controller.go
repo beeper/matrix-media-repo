@@ -394,3 +394,8 @@ func StoreDirect(f *AlreadyUploadedFile, contents io.ReadCloser, expectedSize in
 	trackUploadAsLastAccess(ctx, media)
 	return media, nil
 }
+
+func AddMediaReference(origin string, mediaID string, roomID string, ctx rcontext.RequestContext) error {
+	db := storage.GetDatabase().GetMediaStore(ctx)
+	return db.InsertMediaReference(origin, mediaID, roomID)
+}

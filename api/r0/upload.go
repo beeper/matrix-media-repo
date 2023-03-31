@@ -62,6 +62,14 @@ func CreateMedia(r *http.Request, rctx rcontext.RequestContext, user api.UserInf
 		return api.InternalServerError("Unexpected Error")
 	}
 
+	roomID := r.URL.Query().Get("room_id")
+	if roomID != "" {
+		if err = upload_controller.AddMediaReference(media.Origin, media.MediaId, roomID, rctx); err != nil {
+			rctx.Log.Error("error storing room reference for media upload: ", err)
+			return api.InternalServerError("Unexpected Error")
+		}
+	}
+
 	return &MediaCreatedResponse{
 		ContentUri:      media.MxcUri(),
 		UnusedExpiresAt: time.Now().Unix() + int64(rctx.Config.Features.MSC2246Async.AsyncUploadExpirySecs),
@@ -225,7 +233,6 @@ func UploadMedia(r *http.Request, rctx rcontext.RequestContext, user api.UserInf
 	}
 
 	contentLength := upload_controller.EstimateContentLength(r.ContentLength, r.Header.Get("Content-Length"))
-
 	media, err := upload_controller.UploadMedia(r.Body, contentLength, contentType, filename, user.UserId, r.Host, mediaId, rctx)
 	if err != nil {
 		io.Copy(ioutil.Discard, r.Body) // Ditch the entire request
@@ -253,6 +260,14 @@ func UploadMedia(r *http.Request, rctx rcontext.RequestContext, user api.UserInf
 		return &MediaUploadedResponse{
 			ContentUri: media.MxcUri(),
 			Blurhash:   hash,
+		}
+	}
+
+	roomID := r.URL.Query().Get("room_id")
+	if roomID != "" {
+		if err = upload_controller.AddMediaReference(media.Origin, media.MediaId, roomID, rctx); err != nil {
+			rctx.Log.Error("error storing room reference for media upload: ", err)
+			return api.InternalServerError("unexpected error")
 		}
 	}
 

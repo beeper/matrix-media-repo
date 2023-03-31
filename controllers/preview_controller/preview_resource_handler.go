@@ -2,10 +2,10 @@ package preview_controller
 
 import (
 	"fmt"
-	"github.com/getsentry/sentry-go"
 	"sync"
 
 	"github.com/disintegration/imaging"
+	"github.com/getsentry/sentry-go"
 	"github.com/sirupsen/logrus"
 	"github.com/turt2live/matrix-media-repo/common"
 	"github.com/turt2live/matrix-media-repo/common/config"

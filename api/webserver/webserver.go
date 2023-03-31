@@ -89,6 +89,7 @@ func Init() *sync.WaitGroup {
 	logoutAllHandler := handler{api.AccessTokenRequiredRoute(r0.LogoutAll), "logout_all", counter, false}
 	getMediaAttrsHandler := handler{api.AccessTokenRequiredRoute(custom.GetAttributes), "get_media_attributes", counter, false}
 	setMediaAttrsHandler := handler{api.AccessTokenRequiredRoute(custom.SetAttributes), "set_media_attributes", counter, false}
+	addMediaReferenceHandler := handler{api.AccessTokenRequiredRoute(r0.AddMediaReference), "add_media_reference", counter, false}
 
 	routes := make([]definedRoute, 0)
 	// r0 is typically clients and v1 is typically servers. v1 is deprecated.
@@ -146,6 +147,7 @@ func Init() *sync.WaitGroup {
 		routes = append(routes, definedRoute{"/_matrix/media/" + version + "/admin/import/{importId:[a-zA-Z0-9.:\\-_]+}/close", route{"POST", stopImportHandler}})
 		routes = append(routes, definedRoute{"/_matrix/media/" + version + "/admin/media/{server:[a-zA-Z0-9.:\\-_]+}/{mediaId:[^/]+}/attributes", route{"GET", getMediaAttrsHandler}})
 		routes = append(routes, definedRoute{"/_matrix/media/" + version + "/admin/media/{server:[a-zA-Z0-9.:\\-_]+}/{mediaId:[^/]+}/attributes/set", route{"POST", setMediaAttrsHandler}})
+		routes = append(routes, definedRoute{"/_matrix/media/" + version + "/reference/{server:[a-zA-Z0-9.:\\-_]+}/{mediaId:[^/]+}", route{"POST", addMediaReferenceHandler}})
 
 		// Routes that we should handle but aren't in the media namespace (synapse compat)
 		routes = append(routes, definedRoute{"/_matrix/client/" + version + "/admin/purge_media_cache", route{"POST", purgeRemote}})

@@ -33,6 +33,7 @@ const selectMediaByUserBefore = "SELECT origin, media_id, upload_name, content_t
 const selectMediaByDomainBefore = "SELECT origin, media_id, upload_name, content_type, user_id, sha256_hash, size_bytes, datastore_id, location, creation_ts, quarantined FROM media WHERE origin = $1 AND creation_ts <= $2"
 const selectMediaByLocation = "SELECT origin, media_id, upload_name, content_type, user_id, sha256_hash, size_bytes, datastore_id, location, creation_ts, quarantined FROM media WHERE datastore_id = $1 AND location = $2"
 const selectIfQuarantined = "SELECT 1 FROM media WHERE sha256_hash = $1 AND quarantined = $2 LIMIT 1;"
+const insertMediaReference = "INSERT INTO media_references (origin, media_id, room_id) values ($1, $2, $3)"
 
 var dsCacheByPath = sync.Map{} // [string] => Datastore
 var dsCacheById = sync.Map{}   // [string] => Datastore
@@ -63,6 +64,7 @@ type mediaStoreStatements struct {
 	selectMediaByDomainBefore       *sql.Stmt
 	selectMediaByLocation           *sql.Stmt
 	selectIfQuarantined             *sql.Stmt
+	insertMediaReference            *sql.Stmt
 }
 
 type MediaStoreFactory struct {
@@ -152,6 +154,9 @@ func InitMediaStore(sqlDb *sql.DB) (*MediaStoreFactory, error) {
 		return nil, err
 	}
 	if store.stmts.selectIfQuarantined, err = store.sqlDb.Prepare(selectIfQuarantined); err != nil {
+		return nil, err
+	}
+	if store.stmts.insertMediaReference, err = store.sqlDb.Prepare(insertMediaReference); err != nil {
 		return nil, err
 	}
 
@@ -739,4 +744,14 @@ func (s *MediaStore) IsQuarantined(sha256hash string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func (s *MediaStore) InsertMediaReference(origin string, mediaID string, roomID string) error {
+	_, err := s.statements.insertMediaReference.ExecContext(
+		s.ctx,
+		origin,
+		mediaID,
+		roomID,
+	)
+	return err
 }

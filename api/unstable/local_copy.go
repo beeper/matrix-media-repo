@@ -1,10 +1,10 @@
 package unstable
 
 import (
-	"github.com/getsentry/sentry-go"
 	"net/http"
 	"strconv"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/turt2live/matrix-media-repo/api"

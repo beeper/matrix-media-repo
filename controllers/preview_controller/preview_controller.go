@@ -18,6 +18,7 @@ import (
 	"github.com/turt2live/matrix-media-repo/storage/stores"
 	"github.com/turt2live/matrix-media-repo/types"
 	"github.com/turt2live/matrix-media-repo/util"
+	"github.com/turt2live/matrix-media-repo/util/resource_handler"
 )
 
 func GetPreview(urlStr string, onHost string, forUserId string, atTs int64, languageHeader string, ctx rcontext.RequestContext) (*types.UrlPreview, error) {
@@ -79,10 +80,25 @@ func GetPreview(urlStr string, onHost string, forUserId string, atTs int64, lang
 			break
 		}
 
-		previewChan := getResourceHandler().GeneratePreview(urlToPreview, forUserId, onHost, languageHeader, ctx.Config.UrlPreviews.OEmbed)
-		defer close(previewChan)
-
-		result := <-previewChan
+		var result *urlPreviewResponse
+		if ctx.Config.UrlPreviews.DisableTunny {
+			ctx.Log.Info("running preview generation in http request goroutine")
+			result = urlPreviewWorkFn(&resource_handler.WorkRequest{
+				Id: fmt.Sprintf("preview_%s", urlToPreview.UrlString),
+				Metadata: &urlPreviewRequest{
+					urlPayload:     urlToPreview,
+					forUserId:      forUserId,
+					onHost:         onHost,
+					languageHeader: languageHeader,
+					allowOEmbed:    ctx.Config.UrlPreviews.OEmbed,
+				},
+			})
+		} else {
+			ctx.Log.Info("scheduling preview generation with Tunny")
+			previewChan := getResourceHandler().GeneratePreview(urlToPreview, forUserId, onHost, languageHeader, ctx.Config.UrlPreviews.OEmbed)
+			defer close(previewChan)
+			result = <-previewChan
+		}
 		return result.preview, result.err
 	})
 
